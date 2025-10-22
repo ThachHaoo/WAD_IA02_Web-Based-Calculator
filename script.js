@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
             formattedOperand = `${formattedInteger}.${decimalPart}`;
         } else {
             formattedOperand = parseFloat(numberString).toLocaleString('en-US', {
-                maximumFractionDigits: 10
+                maximumFractionDigits: 16
             });
         }
         return formattedOperand;
@@ -174,7 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         lastFullEquation = `${getFormattedNumber(previousOperand)} ${operation} ${getFormattedNumber(currentOperand)} =`;
         unaryHistory = undefined;
-
+        
         switch (operation) {
             case '+':
                 computation = prev + current;
@@ -200,6 +200,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 return true; 
         }
 
+        const YOUR_LIMIT = 16;
+        computation = parseFloat(computation.toFixed(YOUR_LIMIT));
         const resultString = computation.toString();
 
         calculationHistory.push({
@@ -264,7 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         
-        if (currentOperand.length > 15) return;
+        if (currentOperand.length > 17) return;
 
         currentOperand = currentOperand.toString() + number.toString();
     }
@@ -375,6 +377,8 @@ document.addEventListener('DOMContentLoaded', () => {
             default:
                 return true;
         }
+        const YOUR_LIMIT = 16;
+        result = parseFloat(result.toFixed(YOUR_LIMIT));
         currentOperand = result.toString();
         readyToReset = true; 
         return true;
