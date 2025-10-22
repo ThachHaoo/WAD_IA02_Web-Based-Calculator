@@ -64,13 +64,13 @@
 
             <div id="button-grid" class="grid grid-cols-4 gap-2 text-center w-full">
                 <!-- THAY ĐỔI: Thêm ID và trạng thái disabled cho các nút memory -->
-                <div class="col-span-4 grid grid-cols-6 text-sm font-medium">
+                <div class="col-span-4 grid grid-cols-6 lg:grid-cols-5 text-sm font-medium">
                     <button id="btn-mc" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors disabled:opacity-50 disabled:hover:bg-transparent" disabled>MC</button>
                     <button id="btn-mr" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors disabled:opacity-50 disabled:hover:bg-transparent" disabled>MR</button>
                     <button id="btn-m-plus" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">M+</button>
                     <button id="btn-m-minus" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">M-</button>
                     <button id="btn-ms" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">MS</button>
-                    <button id="btn-m-dropdown" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors disabled:opacity-50 disabled:hover:bg-transparent" disabled>M&#709;</button>
+                    <button id="btn-m-dropdown" class="lg:hidden flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors disabled:opacity-50 disabled:hover:bg-transparent" disabled>M&#709;</button>
                 </div>
                 
                 <button class="btn bg-gray-300/60 hover:bg-gray-300/90 text-lg rounded-lg">%</button>
@@ -301,7 +301,9 @@
                         
                         memItem.appendChild(memValueEl);
                         // Chèn vào đầu để mục mới nhất ở trên cùng
-                        memoryContent.prepend(memItem); 
+                        // THAY ĐỔI: Đổi .prepend() thành .appendChild() để hiển thị đúng thứ tự
+                        // (mục mới nhất memoryHistory[0] sẽ ở trên cùng)
+                        memoryContent.appendChild(memItem); 
                     });
                 }
             }
