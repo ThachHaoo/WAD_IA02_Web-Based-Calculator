@@ -11,6 +11,7 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            overflow: hidden;
         }
         
         .btn {
@@ -18,51 +19,58 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            
-            /* THAY ĐỔI: Bỏ tỷ lệ 1:1 */
-            /* aspect-ratio: 1 / 1; */ 
-
-            /* THAY ĐỔI: Thêm padding-y (py-4) để làm nút thấp hơn */
-            padding-top: 1rem;    /* 16px */
-            padding-bottom: 1rem; /* 16px */
-
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
             transition: all 0.1s ease;
         }
         .btn:active {
             transform: scale(0.96);
         }
+
+        #button-grid {
+            display: grid;
+            grid-template-rows: auto repeat(6, 1fr); /* Hàng memory auto, 6 hàng còn lại 1fr */
+            flex-grow: 1; /* Cho phép lưới nút phát triển */
+        }
+        .btn {
+            height: 100%; /* Làm cho các nút lấp đầy ô lưới */
+        }
     </style>
 </head>
-<body class="bg-gray-100 flex justify-center h-screen pt-10 px-4 pb-10">
+<body class="bg-gray-100 flex justify-center h-screen p-0 lg:pt-10 lg:pb-10">
 
-    <div class="flex flex-col lg:flex-row w-full mx-auto lg:space-x-6 space-y-6 lg:space-y-0 h-full">
+    <!-- Lớp phủ (overlay) cho modal trên di động -->
+    <div id="mobile-history-overlay" class="hidden fixed inset-0 bg-black/30 backdrop-blur-sm z-40 lg:hidden"></div>
 
-        <div class="bg-gray-200/60 backdrop-blur-md p-3 rounded-xl shadow-lg w-full lg:flex-1 flex flex-col">
+    <div class="flex flex-col lg:flex-row w-full mx-auto lg:space-x-6 lg:space-y-0 h-full p-4 lg:p-0">
+
+        <div class="bg-gray-200/60 backdrop-blur-md p-3 rounded-xl shadow-lg w-full flex-1 flex flex-col relative">
             
             <div class="w-full px-4 pt-8 pb-4 flex-shrink-0 relative">
                 
-                <button id="history-toggle" title="History (Ctrl+H)" class="absolute top-0 right-3 p-2 rounded-md hover:bg-gray-300/80 text-gray-700 transition-colors lg:hidden">
-                    <svg xmlns="http://www.w.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                <button id="history-toggle" title="History (Ctrl+H)" class="absolute top-0 right-3 p-2 rounded-md hover:bg-gray-300/80 text-gray-700 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
                         <path d="M8.515 1.019A7 7 0 0 0 8 1V0a8 8 0 0 1 .589.022l-.074.997zM12.983 3.017a.5.5 0 0 1 .011.002l.994-.074A8 8 0 0 1 15 8h-1A7 7 0 0 0 12.983 3.017zM13 8a5 5 0 0 0-10 0H2a6 6 0 0 1 12 0h-1zm-.002 4.95A.5.5 0 0 1 12.983 12.983l.074.994A8 8 0 0 1 8 16v-1A7 7 0 0 0 12.998 12.95zM3.017 12.983a.5.5 0 0 1-.011-.002l-.994.074A8 8 0 0 1 1 8h1a7 7 0 0 0 1.017 4.983z"/>
                         <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
                         <path d="M6.5 1A.5.5 0 0 1 7 .5h2a.5.5 0 0 1 0 1H7a.5.5 0 0 1-.5-.5z"/>
                     </svg>
                 </button>
                 
-                <div class="w-full text-right px-4 pt-12 pb-4 flex-shrink-0">
+                <div class="w-full text-right px-4  flex-shrink-0">
                     <div id="history-display" class="h-7 text-gray-500 text-lg">&nbsp;</div>
                     <div id="main-display" class="text-5xl font-bold truncate">0</div>
                 </div>
             </div>
 
             <div id="button-grid" class="grid grid-cols-4 gap-2 text-center w-full">
+                <!-- THAY ĐỔI: Thêm ID và trạng thái disabled cho các nút memory -->
                 <div class="col-span-4 grid grid-cols-6 text-sm font-medium">
-                    <button class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">MC</button>
-                    <button class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">MR</button>
-                    <button class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">M+</button>
-                    <button class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">M-</button>
-                    <button class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">MS</button>
-                    <button class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">M&#709;</button>
+                    <button id="btn-mc" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors disabled:opacity-50 disabled:hover:bg-transparent" disabled>MC</button>
+                    <button id="btn-mr" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors disabled:opacity-50 disabled:hover:bg-transparent" disabled>MR</button>
+                    <button id="btn-m-plus" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">M+</button>
+                    <button id="btn-m-minus" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">M-</button>
+                    <button id="btn-ms" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors">MS</button>
+                    <button id="btn-m-dropdown" class="flex-1 py-2 rounded-md hover:bg-gray-300/80 transition-colors disabled:opacity-50 disabled:hover:bg-transparent" disabled>M&#709;</button>
                 </div>
                 
                 <button class="btn bg-gray-300/60 hover:bg-gray-300/90 text-lg rounded-lg">%</button>
@@ -97,25 +105,48 @@
             </div>
         </div>
 
-        <div id="history-panel" class="hidden lg:flex w-[400px] bg-gray-200/60 backdrop-blur-md p-6 rounded-xl shadow-lg min-h-[200px] flex-col">
+        <div id="history-panel" 
+             class="hidden fixed z-50 bottom-0 left-0 right-0 w-full h-3/4 bg-gray-200/60 backdrop-blur-md p-6 rounded-t-xl shadow-lg flex flex-col
+                    transition-transform duration-300 ease-in-out translate-y-full
+                    lg:flex lg:static lg:z-auto lg:w-[400px] lg:h-full lg:translate-y-0 lg:rounded-xl">
 
+            <!-- THAY ĐỔI: Thêm ID cho các nút tab -->
             <div class="flex space-x-6 border-b border-gray-300 mb-4 flex-shrink-0">
-                <button class="font-bold border-b-2 border-blue-500 pb-2">History</button>
-                <button class="text-gray-600 pb-2">Memory</button>
+                <button id="tab-history" class="font-bold border-b-2 border-blue-500 pb-2">History</button>
+                <button id="tab-memory" class="text-gray-600 pb-2">Memory</button>
             </div>
 
+            <!-- Nội dung Lịch sử -->
             <div id="history-content" class="text-right flex-grow overflow-y-auto space-y-4 pr-4">
                 <p id="no-history-message" class="text-center text-gray-500 pt-8">There's no history yet.</p>
-                
-                </div>
+                <!-- Các mục lịch sử sẽ được chèn vào đây -->
+            </div>
 
+            <!-- THÊM MỚI: Nội dung Bộ nhớ -->
+            <div id="memory-content" class="text-right flex-grow overflow-y-auto space-y-4 pr-4 hidden">
+                 <p id="no-memory-message" class="text-center text-gray-500 pt-8">There's nothing saved in memory.</p>
+                 <!-- Các mục bộ nhớ sẽ được chèn vào đây -->
+            </div>
+
+            <!-- THAY ĐỔI: Thêm trình bao bọc cho các nút xóa -->
             <div class="pt-4 flex justify-end flex-shrink-0">
-                <button id="clear-history-button" class="p-2 rounded-md hover:bg-gray-300/80 text-gray-700 transition-colors" title="Clear history">
-                    <svg xmlns="http://www.w.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                    </svg>
-                </button>
+                <div id="clear-history-wrapper">
+                    <button id="clear-history-button" class="p-2 rounded-md hover:bg-gray-300/80 text-gray-700 transition-colors" title="Clear history">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                        </svg>
+                    </button>
+                </div>
+                <!-- THÊM MỚI: Nút Xóa Bộ nhớ -->
+                <div id="clear-memory-wrapper" class="hidden">
+                     <button id="clear-memory-button" class="p-2 rounded-md hover:bg-gray-300/80 text-gray-700 transition-colors" title="Clear all memory">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -129,33 +160,46 @@
             const buttonGrid = document.getElementById('button-grid');
 
             // --- 2. BIẾN TRẠNG THÁI (STATE) CỦA MÁY TÍNH ---
-            // --- THAY ĐỔI: Thêm các phần tử của Lịch sử ---
             const historyToggle = document.getElementById('history-toggle');
             const historyPanel = document.getElementById('history-panel');
             const historyContent = document.getElementById('history-content');
             const noHistoryMessage = document.getElementById('no-history-message');
             const clearHistoryButton = document.getElementById('clear-history-button');
+            const mobileHistoryOverlay = document.getElementById('mobile-history-overlay');
+
+            // THÊM MỚI: Lấy các thành phần Bộ nhớ
+            const tabHistory = document.getElementById('tab-history');
+            const tabMemory = document.getElementById('tab-memory');
+            const memoryContent = document.getElementById('memory-content');
+            const noMemoryMessage = document.getElementById('no-memory-message');
+            const clearMemoryButton = document.getElementById('clear-memory-button');
+            const clearHistoryWrapper = document.getElementById('clear-history-wrapper');
+            const clearMemoryWrapper = document.getElementById('clear-memory-wrapper');
+
+            const btnMC = document.getElementById('btn-mc');
+            const btnMR = document.getElementById('btn-mr');
+            const btnMPlus = document.getElementById('btn-m-plus');
+            const btnMMinus = document.getElementById('btn-m-minus');
+            const btnMS = document.getElementById('btn-ms');
+            const btnMDropdown = document.getElementById('btn-m-dropdown');
+
             let currentOperand = '0';
             let previousOperand = '';
             let operation = undefined;
-            // Cờ (flag) để biết có nên xóa màn hình khi nhập số mới hay không (sau khi nhấn '=')
             let readyToReset = false;
             
-            // --- THAY ĐỔI: Thêm 2 biến lịch sử mới ---
-            let unaryHistory = undefined;     // Ví dụ: "√(√(9))"
-            let lastFullEquation = undefined; // Ví dụ: "3 + 5 ="
-            // --- THAY ĐỔI: Thêm mảng Lịch sử ---
+            let unaryHistory = undefined;
+            let lastFullEquation = undefined;
             let calculationHistory = [];
             
-            // --- THAY ĐỔI MỚI: Thêm 2 biến để "LẶP LẠI DẤU BẰNG" ---
             let lastOperationForEquals = undefined;
             let lastOperandForEquals = undefined;
-            // --- KẾT THÚC THAY ĐỔI ---
+
+            // THÊM MỚI: Biến trạng thái cho Bộ nhớ
+            let memoryHistory = []; // Sẽ lưu một danh sách các số
 
             // --- 3. HÀM CẬP NHẬT GIAO DIỆN ---
             
-            // --- THAY ĐỔI: Tách logic định dạng số ---
-            // Hàm này lấy một chuỗi số và trả về chuỗi đã định dạng
             function getFormattedNumber(numberString) {
                 if (numberString === '' || numberString === null) numberString = '0';
                 
@@ -163,7 +207,6 @@
                 if (numberString.includes('.')) {
                     const parts = numberString.split('.');
                     const decimalPart = parts[1];
-                    // Sửa lỗi: Nếu nhập "5." thì integerPart là "5"
                     const integerPart = parts[0] === '' ? '0' : parts[0]; 
                     const formattedInteger = parseFloat(integerPart).toLocaleString('en-US');
                     formattedOperand = `${formattedInteger}.${decimalPart}`;
@@ -175,19 +218,14 @@
                 return formattedOperand;
             }
             
-            // Hàm updateDisplay bây giờ gọn gàng hơn
             function updateDisplay() {
                 let valueToDisplay = currentOperand;
-                // Sửa lỗi: Nếu currentOperand là rỗng (vừa nhấn phép toán)
-                // thì phải hiển thị previousOperand, không phải '0'
                 if (currentOperand === '' && operation != null) {
                     valueToDisplay = previousOperand;
                 }
                 
-                // Sử dụng hàm định dạng mới
                 mainDisplay.innerText = getFormattedNumber(valueToDisplay);
 
-                // Cập nhật màn hình lịch sử (giữ nguyên logic cũ của bạn)
                 if (lastFullEquation) {
                     historyDisplay.innerText = lastFullEquation;
                 } else if (unaryHistory) {
@@ -197,30 +235,23 @@
                         historyDisplay.innerText = unaryHistory;
                     }
                 } else if (operation != null) {
-                    historyDisplay.innerText = `${getFormattedNumber(previousOperand)} ${operation}`; // Cập nhật: Dùng hàm format
+                    historyDisplay.innerText = `${getFormattedNumber(previousOperand)} ${operation}`;
                 } else {
-                    historyDisplay.innerText = '\u00A0'; // Ký tự không xuống dòng
+                    historyDisplay.innerText = '\u00A0';
                 }
             }
 
             // --- 3.5. HÀM CẬP NHẬT GIAO DIỆN LỊCH SỬ ---
             function updateHistoryDisplay() {
                 if (calculationHistory.length === 0) {
-                    // Hiển thị thông báo "No history"
                     noHistoryMessage.classList.remove('hidden');
-                    // Xóa các mục lịch sử cũ (nếu có)
                     historyContent.querySelectorAll('.history-item').forEach(item => item.remove());
                 } else {
-                    // Ẩn thông báo "No history"
                     noHistoryMessage.classList.add('hidden');
-                    
-                    // Xóa các mục lịch sử cũ trước khi vẽ lại
                     historyContent.querySelectorAll('.history-item').forEach(item => item.remove());
 
-                    // Thêm các mục mới, từ mới nhất đến cũ nhất
                     calculationHistory.slice().reverse().forEach(item => {
                         const historyItem = document.createElement('div');
-                        // Thêm class để dễ dàng xóa và định dạng
                         historyItem.className = 'history-item py-1'; 
                         
                         const equationEl = document.createElement('div');
@@ -229,14 +260,48 @@
                         
                         const resultEl = document.createElement('div');
                         resultEl.className = 'text-xl font-bold truncate';
-                        // Sử dụng hàm định dạng số chúng ta vừa tạo!
                         resultEl.innerText = getFormattedNumber(item.result);
                         
                         historyItem.appendChild(equationEl);
                         historyItem.appendChild(resultEl);
                         
-                        // Thêm vào đầu danh sách (để không cần reverse)
                         historyContent.appendChild(historyItem);
+                    });
+                }
+            }
+
+            // --- 3.6. THÊM MỚI: HÀM CẬP NHẬT GIAO DIỆN BỘ NHỚ ---
+            function updateMemoryDisplay() {
+                // Xóa nội dung cũ
+                memoryContent.querySelectorAll('.memory-item').forEach(item => item.remove());
+
+                if (memoryHistory.length === 0) {
+                    noMemoryMessage.classList.remove('hidden');
+                    // Tắt các nút MC, MR, M_Dropdown
+                    btnMC.disabled = true;
+                    btnMR.disabled = true;
+                    btnMDropdown.disabled = true;
+                } else {
+                    noMemoryMessage.classList.add('hidden');
+                    // Bật các nút MC, MR, M_Dropdown
+                    btnMC.disabled = false;
+                    btnMR.disabled = false;
+                    btnMDropdown.disabled = false;
+
+                    // Thêm từng mục bộ nhớ vào (hiển thị ngược: mới nhất ở trên)
+                    memoryHistory.forEach((memValue) => {
+                        const memItem = document.createElement('div');
+                        memItem.className = 'memory-item py-2';
+                        
+                        const memValueEl = document.createElement('div');
+                        memValueEl.className = 'text-2xl font-bold truncate';
+                        memValueEl.innerText = getFormattedNumber(memValue.toString());
+                        
+                        // TODO: Có thể thêm các nút M+, M-, MC cho từng mục ở đây
+                        
+                        memItem.appendChild(memValueEl);
+                        // Chèn vào đầu để mục mới nhất ở trên cùng
+                        memoryContent.prepend(memItem); 
                     });
                 }
             }
@@ -244,22 +309,11 @@
             // --- 4. HÀM TÍNH TOÁN ---
             function calculate() {
                 
-                // --- THAY ĐỔI MỚI: XỬ LÝ NHẤN "=" LIÊN TIẾP ---
                 if (operation === undefined && lastOperationForEquals !== undefined) {
-                    // Nếu không có phép toán nào đang chờ, nhưng có phép toán "=" trước đó
-                    // thì hãy sử dụng lại phép toán và toán hạng cuối cùng đó.
-                    
-                    // Ví dụ: 6 + 6 = 12. 
-                    // currentOperand = "12"
-                    // lastOperationForEquals = "+"
-                    // lastOperandForEquals = "6"
-                    
-                    // Thiết lập lại phép tính để thực hiện "12 + 6"
                     operation = lastOperationForEquals;
-                    previousOperand = currentOperand; // "12"
-                    currentOperand = lastOperandForEquals; // "6"
+                    previousOperand = currentOperand;
+                    currentOperand = lastOperandForEquals;
                 }
-                // --- KẾT THÚC THAY ĐỔI ---
 
                 let computation;
                 const prev = parseFloat(previousOperand);
@@ -267,23 +321,18 @@
 
                 if (isNaN(prev) || isNaN(current)) return true;
 
-                // --- THAY ĐỔI MỚI: LƯU LẠI PHÉP TOÁN ĐỂ LẶP LẠI ---
-                // Lưu lại phép toán và toán hạng *trước khi* tính toán
-                // để dùng cho lần nhấn "=" tiếp theo.
                 lastOperationForEquals = operation;
                 lastOperandForEquals = currentOperand;
-                // --- KẾT THÚC THAY ĐỔI ---
 
-                // --- SỬA LỖI 2: Dùng getFormattedNumber để phép tính lịch sử đẹp hơn ---
                 lastFullEquation = `${getFormattedNumber(previousOperand)} ${operation} ${getFormattedNumber(currentOperand)} =`;
-                unaryHistory = undefined; // Xóa lịch sử 1 ngôi
+                unaryHistory = undefined;
 
                 switch (operation) {
                     case '+':
                         computation = prev + current;
                         break;
-                    case '−': // Lưu ý: Đây là ký tự 'trừ' (Minus), không phải 'gạch nối' (Hyphen)
-                    case '-': // Thêm cả gạch nối cho chắc
+                    case '−':
+                    case '-':
                         computation = prev - current;
                         break;
                     case '×':
@@ -291,13 +340,11 @@
                         break;
                     case '÷':
                         if (current === 0) {
-                            // Xử lý chia cho 0
                             mainDisplay.innerText = 'Cannot divide by zero';
-                            // Xóa trạng thái lặp lại nếu có lỗi
                             lastOperationForEquals = undefined; 
                             lastOperandForEquals = undefined;
-                            readyToReset = true; // Sẵn sàng reset ở lần nhập sau
-                            return false; // Báo lỗi, không update
+                            readyToReset = true; 
+                            return false; 
                         }
                         computation = prev / current;
                         break;
@@ -305,19 +352,15 @@
                         return true; 
                 }
 
-                // --- SỬA LỖI 1: Định nghĩa 'resultString' TRƯỚC KHI sử dụng nó ---
                 const resultString = computation.toString();
 
-                // --- THAY ĐỔI: Thêm vào Lịch sử ---
                 calculationHistory.push({
                     equation: lastFullEquation,
-                    result: resultString // Bây giờ biến này đã hợp lệ
+                    result: resultString
                 });
-                // Cập nhật giao diện lịch sử
                 updateHistoryDisplay();
-                // --- KẾT THÚC THAY ĐỔI ---
 
-                currentOperand = resultString; // Sử dụng lại biến
+                currentOperand = resultString;
                 operation = undefined;
                 previousOperand = '';
                 readyToReset = true; 
@@ -326,83 +369,53 @@
 
             // --- 5. HÀM CHỌN PHÉP TOÁN ---
             function chooseOperation(op) {
-                // --- THAY ĐỔI: Xóa lịch sử phép toán = ---
                 lastFullEquation = undefined;
-                
-                // --- THAY ĐỔI MỚI: Xóa trạng thái lặp lại của "=" ---
                 lastOperationForEquals = undefined;
                 lastOperandForEquals = undefined;
-                // --- KẾT THÚC THAY ĐỔI ---
-                
-                // --- THAY ĐỔI MỚI: Xóa cờ readyToReset ---
-                // Bất kể thế nào, khi chọn 1 phép toán, 
-                // nó không còn "sẵn sàng để reset" nữa.
                 readyToReset = false;
 
-
-                // Sửa lỗi: Nếu đang nhập số mới (currentOperand rỗng) mà nhấn phép toán
-                // thì không làm gì cả, trừ khi đã có previousOperand
                 if (currentOperand === '' && previousOperand === '') return;
                 
-                // Nếu vừa nhấn phép toán (currentOperand rỗng) và nhấn tiếp 1 phép toán khác
-                // thì chỉ cập nhật phép toán
                 if (currentOperand === '' && previousOperand !== '') {
-                    operation = op; // Cập nhật phép toán mới
-                    unaryHistory = undefined; // Xóa luôn lịch sử 1 ngôi
-                    return; // Bỏ qua phần còn lại
+                    operation = op;
+                    unaryHistory = undefined;
+                    return;
                 }
 
-                // Nếu đã có phép toán trước đó, hãy thực hiện nó
                 if (previousOperand !== '') {
                     calculate();
-                    updateDisplay(); // Cập nhật màn hình với kết quả
+                    updateDisplay();
                 }
 
-                // Chuẩn bị cho phép toán tiếp theo
                 operation = op;
                 previousOperand = currentOperand;
-                currentOperand = ''; // Hoặc '0' nếu bạn muốn
-                unaryHistory = undefined; // Xóa lịch sử 1 ngôi khi bắt đầu phép toán 2 ngôi
+                currentOperand = '';
+                unaryHistory = undefined;
             }
 
             // --- 6. HÀM THÊM SỐ VÀO MÀN HÌNH ---
             function appendNumber(number) {
-                // Nếu vừa nhấn '=', lần nhập số tiếp theo sẽ xóa kết quả cũ
                 if (readyToReset) {
                     currentOperand = '';
                     readyToReset = false;
-                    // --- THAY ĐỔI: Xóa tất cả lịch sử ---
                     lastFullEquation = undefined;
                     unaryHistory = undefined;
-                    
-                    // --- THAY ĐỔI MỚI: Xóa trạng thái lặp lại của "=" ---
                     lastOperationForEquals = undefined;
                     lastOperandForEquals = undefined;
-                    // --- KẾT THÚC THAY ĐỔI ---
                 }
 
-                // --- FIX LỖI NaN ---
-                // Nếu currentOperand rỗng (vì vừa nhấn phép toán),
-                // đây là số đầu tiên của toán hạng mới.
                 if (currentOperand === '' && operation != null) {
                     currentOperand = number;
-                    // --- THAY ĐỔI: Xóa lịch sử 1 ngôi (nếu có) ---
                     unaryHistory = undefined;
-                    // --- THAY ĐỔI: THÊM 'return' ---
-                    // Phải dừng lại ở đây để nó không bị lặp lại ở cuối hàm
                     return; 
                 }
-                // --- KẾT THÚC FIX ---
 
-                // Ngăn người dùng nhập nhiều số 0 ở đầu
                 if (currentOperand === '0' && number === '0') return;
-                // Sửa lỗi: Nếu đang là 0. và nhập 5 -> 0.5 chứ không phải 5
                 if (currentOperand === '0' && number !== '0' && !currentOperand.includes('.')) {
                     currentOperand = number;
                     return;
                 }
                 
-                // Giới hạn độ dài
                 if (currentOperand.length > 15) return;
 
                 currentOperand = currentOperand.toString() + number.toString();
@@ -410,34 +423,23 @@
             
             // --- 7. CÁC HÀM XỬ LÝ NÚT KHÁC ---
             
-            // Xóa tất cả (All Clear)
             function clearAll() {
                 currentOperand = '0';
                 previousOperand = '';
                 operation = undefined;
                 readyToReset = false;
-                // --- THAY ĐỔI: Xóa tất cả lịch sử ---
                 lastFullEquation = undefined;
                 unaryHistory = undefined;
-                
-                // --- THAY ĐỔI MỚI: Xóa trạng thái lặp lại của "=" ---
                 lastOperationForEquals = undefined;
                 lastOperandForEquals = undefined;
-                // --- KẾT THÚC THAY ĐỔI ---
             }
 
-            // Xóa mục nhập hiện tại (Clear Entry)
             function clearEntry() {
                 currentOperand = '0';
                 readyToReset = false;
-                // --- THAY ĐỔI: Xóa lịch sử 1 ngôi (vì chuỗi đã bị phá vỡ) ---
                 unaryHistory = undefined;
-                // Không xóa lastFullEquation, để người dùng vẫn thấy phép tính trước đó
-                // Cũng không xóa "lastOperationForEquals"
-                // (Giống Windows: 5 + 6 = 11. Nhấn CE -> 0. Nhấn = -> 6. (0 + 6))
             }
             
-            // Xóa lùi (Backspace)
             function backspace() {
                 if (readyToReset) {
                     clearAll();
@@ -445,136 +447,173 @@
                     return;
                 }
                 currentOperand = currentOperand.toString().slice(0, -1);
-                // --- THAY ĐỔI: Xóa lịch sử 1 ngôi (vì chuỗi đã bị phá vỡ) ---
                 unaryHistory = undefined;
-                // --- THAY ĐỔI MỚI: Xóa trạng thái lặp lại của "=" ---
-                // Nếu xóa lùi, nghĩa là đang sửa số, phá vỡ chuỗi lặp lại
                 lastOperationForEquals = undefined;
                 lastOperandForEquals = undefined;
-                // --- KẾT THÚC THAY ĐỔI ---
                 
                 if (currentOperand === '') {
-                    currentOperand = '0'; // Nếu xóa hết, quay về 0
+                    currentOperand = '0';
                 }
             }
             
-            // Thêm dấu thập phân
             function addDecimal() {
                 if (readyToReset) {
-                    currentOperand = '0'; // Bắt đầu số mới với "0."
+                    currentOperand = '0';
                     readyToReset = false;
-                    // --- THAY ĐỔI: Xóa tất cả lịch sử ---
                     lastFullEquation = undefined;
                     unaryHistory = undefined;
-                    
-                    // --- THAY ĐỔI MỚI: Xóa trạng thái lặp lại của "=" ---
                     lastOperationForEquals = undefined;
                     lastOperandForEquals = undefined;
-                    // --- KẾT THÚC THAY ĐỔI ---
                 }
                 
-                // --- FIX LỖI NaN ---
-                // Nếu currentOperand rỗng (vì vừa nhấn phép toán)
-                // hãy bắt đầu bằng "0."
                 if (currentOperand === '' && operation != null) {
                     currentOperand = '0.';
-                    // --- THAY ĐỔI: Xóa lịch sử 1 ngôi ---
                     unaryHistory = undefined;
                     return;
                 }
-                // --- KẾT THÚC FIX ---
 
-                if (currentOperand.includes('.')) return; // Đã có dấu '.', không thêm nữa
+                if (currentOperand.includes('.')) return;
                 currentOperand = currentOperand + '.';
             }
             
-            // Đổi dấu (+/-)
             function negate() {
-                if (currentOperand === '0') return; // Không đổi dấu số 0
+                if (currentOperand === '0') return;
                 currentOperand = (parseFloat(currentOperand) * -1).toString();
-                // --- THAY ĐỔI: Xóa lịch sử 1 ngôi (vì chuỗi đã bị phá vỡ) ---
                 unaryHistory = undefined;
-                // Không xóa trạng thái lặp lại (Giống Windows: 5 + 6 = 11. Nhấn +/- -> -11. Nhấn = -> -5. (-11 + 6))
             }
 
-            // Các hàm toán học một ngôi
             function handleUnaryOperation(op) {
-                // --- THAY ĐỔI: Xóa lịch sử phép toán 2 ngôi ---
                 lastFullEquation = undefined;
-                
-                // --- THAY ĐỔI MỚI: Xóa trạng thái lặp lại của "=" ---
                 lastOperationForEquals = undefined;
                 lastOperandForEquals = undefined;
-                // --- KẾT THÚC THAY ĐỔI ---
                 
                 const current = parseFloat(currentOperand);
                 if (isNaN(current)) return true;
                 
-                // --- THAY ĐỔI: Xây dựng chuỗi lịch sử 1 ngôi ---
-                // Lấy giá trị cơ sở: hoặc là lịch sử 1 ngôi trước đó, hoặc là toán hạng hiện tại
-                // Dùng parseFloat để làm đẹp số (bỏ số 0 ở đầu)
                 let baseValue = unaryHistory ? unaryHistory : parseFloat(currentOperand).toString();
-
                 let result;
                 switch(op) {
                     case '%':
-                        // % là 1 trường hợp đặc biệt, nó không xây dựng lịch sử
                         if (previousOperand !== '') {
                             result = parseFloat(previousOperand) * (current / 100);
                         } else {
-                            result = 0; // Windows Calculator trả về 0 nếu chỉ nhấn '%'
+                            result = 0;
                         }
-                        unaryHistory = undefined; // Xóa lịch sử 1 ngôi
+                        unaryHistory = undefined;
                         break;
                     case '¹/x':
                         if (current === 0) {
                             mainDisplay.innerText = 'Cannot divide by zero';
-                            readyToReset = true; // Thêm dòng này để nhất quán
-                            return false; // <--- THAY ĐỔI QUAN TRỌNG: Báo lỗi
+                            readyToReset = true;
+                            return false;
                         }
                         result = 1 / current;
-                        unaryHistory = `1/(${baseValue})`; // Xây dựng lịch sử
+                        unaryHistory = `1/(${baseValue})`;
                         break;
                     case 'x²':
                         result = current * current;
-                        unaryHistory = `sqr(${baseValue})`; // Xây dựng lịch sử (Windows dùng "sqr")
+                        unaryHistory = `sqr(${baseValue})`;
                         break;
                     case '√x':
                         if (current < 0) {
                             mainDisplay.innerText = 'Invalid input';
-                            readyToReset = true; // Thêm dòng này để nhất quán
-                            return false; // <--- THAY ĐỔI QUAN TRỌNG: Báo lỗi
+                            readyToReset = true;
+                            return false;
                         }
                         result = Math.sqrt(current);
                         unaryHistory = `√(${baseValue})`;
                         break;
                     default:
-                        return true; // Sửa: Thêm return true
+                        return true;
                 }
                 currentOperand = result.toString();
                 readyToReset = true; 
-                return true; // <--- THAY ĐỔI QUAN TRỌNG: Báo thành công
+                return true;
+            }
+
+            // --- 7.5. THÊM MỚI: CÁC HÀM XỬ LÝ BỘ NHỚ ---
+        
+            // MC - Memory Clear
+            function memoryClear() {
+                memoryHistory = [];
+                updateMemoryDisplay();
+            }
+
+            // MR - Memory Recall
+            function memoryRecall() {
+                if (memoryHistory.length > 0) {
+                    // Lấy mục mới nhất (mục đầu tiên trong mảng)
+                    currentOperand = memoryHistory[0].toString();
+                    readyToReset = true;
+                    lastFullEquation = undefined;
+                    unaryHistory = undefined;
+                }
+            }
+
+            // MS - Memory Store
+            function memoryStore() {
+                const current = parseFloat(currentOperand);
+                if (isNaN(current)) return;
+                
+                // Thêm vào đầu danh sách (mục mới nhất)
+                memoryHistory.unshift(current);
+                
+                // Giới hạn bộ nhớ (tùy chọn)
+                if (memoryHistory.length > 100) {
+                    memoryHistory.pop();
+                }
+                
+                readyToReset = true;
+                updateMemoryDisplay();
+            }
+
+            // M+ - Memory Add
+            function memoryAdd() {
+                const current = parseFloat(currentOperand);
+                if (isNaN(current)) return;
+
+                if (memoryHistory.length === 0) {
+                    // Nếu chưa có gì, hoạt động như MS
+                    memoryHistory.unshift(current);
+                } else {
+                    // Cộng vào mục đầu tiên (mới nhất)
+                    memoryHistory[0] = memoryHistory[0] + current;
+                }
+                readyToReset = true;
+                updateMemoryDisplay();
+            }
+
+            // M- - Memory Subtract
+            function memorySubtract() {
+                const current = parseFloat(currentOperand);
+                if (isNaN(current)) return;
+
+                if (memoryHistory.length === 0) {
+                    // Nếu chưa có gì, lưu giá trị âm
+                    memoryHistory.unshift(-current);
+                } else {
+                    // Trừ khỏi mục đầu tiên (mới nhất)
+                    memoryHistory[0] = memoryHistory[0] - current;
+                }
+                readyToReset = true;
+                updateMemoryDisplay();
             }
 
             // --- 8. BỘ LẮNG NGHE SỰ KIỆN (EVENT LISTENER) ---
-            // Sử dụng kỹ thuật "Event Delegation"
             buttonGrid.addEventListener('click', (e) => {
-                // Chỉ xử lý khi nhấn vào thẻ BUTTON
                 if (!e.target.matches('button')) return;
 
                 const button = e.target;
-                const action = button.innerText; // Lấy nội dung text của nút
+                const action = button.innerText;
                 
-                // THAY ĐỔI: Thêm 1 biến cờ (flag)
                 let shouldUpdateDisplay = true;
 
-                // Phân loại hành động dựa trên text
-                if (/\d/.test(action)) { // Nếu là số
+                if (/\d/.test(action)) {
                     appendNumber(action);
                 } else if (action === '.') {
                     addDecimal();
                 } else if (action === '=') {
-                    shouldUpdateDisplay = calculate(); // <--- THAY ĐỔI: Lấy kết quả trả về
+                    shouldUpdateDisplay = calculate();
                 } else if (action === 'C') {
                     clearAll();
                 } else if (action === 'CE') {
@@ -583,95 +622,199 @@
                     backspace();
                 } else if (action === '+/-') {
                     negate();
-                } else if (['+', '−', '-', '×', '÷'].includes(action)) { // Các phép toán 2 ngôi
+                } else if (['+', '−', '-', '×', '÷'].includes(action)) {
                     chooseOperation(action);
-                } else if (['%', '¹/x', 'x²', '√x'].includes(action)) { // Các phép toán 1 ngôi
-                    shouldUpdateDisplay = handleUnaryOperation(action); // <--- THAY ĐỔI: Lấy kết quả trả về
+                } else if (['%', '¹/x', 'x²', '√x'].includes(action)) {
+                    shouldUpdateDisplay = handleUnaryOperation(action);
+                // THÊM MỚI: Xử lý các nút Memory
+                } else if (action === 'MC') {
+                    memoryClear();
+                    shouldUpdateDisplay = false; 
+                } else if (action === 'MR') {
+                    memoryRecall();
+                    // shouldUpdateDisplay mặc định là true, sẽ cập nhật main display
+                } else if (action === 'MS') {
+                    memoryStore();
+                    shouldUpdateDisplay = false;
+                } else if (action === 'M+') {
+                    memoryAdd();
+                    shouldUpdateDisplay = false; 
+                } else if (action === 'M-') {
+                    memorySubtract();
+                    shouldUpdateDisplay = false; 
                 }
-                // Các nút Memory (MC, MR...) bị bỏ qua
                 
-                // Cập nhật màn hình sau mỗi lần nhấn nút
                 if (shouldUpdateDisplay) {
                     updateDisplay();
                 }
             });
+
             // --- 9. BỘ LẮNG NGHE SỰ KIỆN BÀN PHÍM ---
-            // Thêm bộ lắng nghe cho sự kiện 'keydown' (nhấn phím)
             document.addEventListener('keydown', (e) => {
-                // Lấy phím được nhấn, ví dụ: "1", "Enter", "/", "*"
                 const key = e.key;
                 
-                // --- THAY ĐỔI: Thêm phím tắt lịch sử ---
                 if (e.ctrlKey && (e.key.toLowerCase() === 'h' || e.key.toLowerCase() === 'H')) {
-                    e.preventDefault(); // Ngăn trình duyệt mở lịch sử
-                    historyPanel.classList.toggle('hidden');
-                    historyPanel.classList.toggle('lg:flex');
-                    return; // Dừng lại, không cần updateDisplay
+                    e.preventDefault(); 
+                    
+                    if (window.innerWidth >= 1024) {
+                        historyPanel.classList.toggle('hidden');
+                    } else {
+                        const isHidden = historyPanel.classList.contains('hidden') || historyPanel.classList.contains('translate-y-full');
+                        if (isHidden) {
+                            showMobileHistory();
+                        } else {
+                            hideMobileHistory();
+                        }
+                    }
+                    return;
                 }
-                // --- KẾT THÚC THAY ĐỔI ---
+                
+                // THÊM MỚI: Phím tắt cho bộ nhớ (Ctrl+M, Ctrl+Q, Ctrl+P, Ctrl+L, Ctrl+R)
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    switch(e.key.toLowerCase()) {
+                        case 'l': // Clear
+                            memoryClear();
+                            return;
+                        case 'r': // Recall
+                            memoryRecall();
+                            updateDisplay();
+                            return;
+                        case 'm': // Store
+                            memoryStore();
+                            return;
+                        case 'p': // Add
+                            memoryAdd();
+                            return;
+                        case 'q': // Subtract
+                            memorySubtract();
+                            return;
+                    }
+                }
 
-                // Lấy cờ từ logic xử lý lỗi của bạn
+
                 let shouldUpdateDisplay = true;
 
-                // Phân loại hành động dựa trên phím
-                if (/\d/.test(key)) { // Nếu là số (0-9)
+                if (/\d/.test(key)) {
                     appendNumber(key);
                 } else if (key === '.') {
                     addDecimal();
                 } else if (key === '=' || key === 'Enter') {
-                    // Cả phím '=' và 'Enter' đều kích hoạt tính toán
                     shouldUpdateDisplay = calculate();
                 } else if (key === 'Escape') { 
-                    // Phím 'Escape' (ESC) dùng để Xóa tất cả (C)
                     clearAll();
                 } else if (key.toLowerCase() === 'c') {
-                    // Phím 'c' dùng để Xóa mục nhập (CE)
                     clearEntry();
                 } else if (key === 'Backspace') {
                     backspace();
                 } else if (key === '+') {
                     chooseOperation('+');
                 } else if (key === '-') {
-                    chooseOperation('−'); // Đảm bảo dùng đúng ký tự 'trừ'
+                    chooseOperation('−');
                 } else if (key === '*') {
-                    chooseOperation('×'); // Đảm bảo dùng đúng ký tự 'nhân'
+                    chooseOperation('×');
                 } else if (key === '/') {
-                    e.preventDefault(); // Ngăn hành vi mặc định của trình duyệt (mở Quick Find)
-                    chooseOperation('÷'); // Đảm bảo dùng đúng ký tự 'chia'
+                    e.preventDefault();
+                    chooseOperation('÷');
                 } else if (key === '%') {
                     shouldUpdateDisplay = handleUnaryOperation('%');
                 } else if (key === '@') {
                     shouldUpdateDisplay = handleUnaryOperation('√x');
-                } else if (key.toLowerCase() === 'q') {
+                } else if (key.toLowerCase() === 'q' && !e.ctrlKey) { // Đảm bảo không xung đột với Ctrl+Q
                     shouldUpdateDisplay = handleUnaryOperation('x²');
-                } else if (key.toLowerCase() === 'r') {
+                } else if (key.toLowerCase() === 'r' && !e.ctrlKey) { // Đảm bảo không xung đột với Ctrl+R
                     shouldUpdateDisplay = handleUnaryOperation('¹/x');
                 }
                 
-                // Chỉ cập nhật màn hình nếu các hàm tính toán không báo lỗi
                 if (shouldUpdateDisplay) {
                     updateDisplay();
                 }
             });
 
-            // --- 10. BỘ LẮNG NGHE CÁC NÚT LỊCH SỬ ---
-            // Nút bật/tắt bảng lịch sử (icon đồng hồ)
+            // --- 10. BỘ LẮNG NGHE CÁC NÚT LỊCH SỬ (VÀ CÁC HÀM HELPER MỚI) ---
+            
+            function showMobileHistory() {
+                mobileHistoryOverlay.classList.remove('hidden');
+                historyPanel.classList.remove('hidden');
+                setTimeout(() => {
+                    historyPanel.classList.remove('translate-y-full');
+                }, 20); 
+            }
+
+            function hideMobileHistory() {
+                historyPanel.classList.add('translate-y-full');
+                setTimeout(() => {
+                    mobileHistoryOverlay.classList.add('hidden');
+                    historyPanel.classList.add('hidden');
+                }, 300);
+            }
+
             historyToggle.addEventListener('click', () => {
-                historyPanel.classList.toggle('hidden');
-                historyPanel.classList.toggle('lg:flex'); // Bật/tắt 'lg:flex'
+                if (window.innerWidth >= 1024) {
+                    historyPanel.classList.toggle('hidden');
+                } else {
+                    showMobileHistory();
+                }
             });
 
-            // Nút xóa lịch sử (icon thùng rác)
+            mobileHistoryOverlay.addEventListener('click', () => {
+                hideMobileHistory();
+            });
+
             clearHistoryButton.addEventListener('click', () => {
-                calculationHistory = []; // Xóa mảng
-                updateHistoryDisplay(); // Cập nhật Giao diện (để hiển thị "No history")
+                calculationHistory = [];
+                updateHistoryDisplay();
+            });
+
+            // --- 11. THÊM MỚI: BỘ LẮNG NGHE CHUYỂN TAB (HISTORY/MEMORY) ---
+        
+            function showHistoryTab() {
+                // Nội dung
+                historyContent.classList.remove('hidden');
+                memoryContent.classList.add('hidden');
+                
+                // Nút Clear
+                clearHistoryWrapper.classList.remove('hidden');
+                clearMemoryWrapper.classList.add('hidden');
+
+                // Kiểu tab
+                tabHistory.classList.add('font-bold', 'border-b-2', 'border-blue-500');
+                tabHistory.classList.remove('text-gray-600');
+                tabMemory.classList.remove('font-bold', 'border-b-2', 'border-blue-500');
+                tabMemory.classList.add('text-gray-600');
+            }
+
+            function showMemoryTab() {
+                // Nội dung
+                historyContent.classList.add('hidden');
+                memoryContent.classList.remove('hidden');
+
+                // Nút Clear
+                clearHistoryWrapper.classList.add('hidden');
+                clearMemoryWrapper.classList.remove('hidden');
+
+                // Kiểu tab
+                tabHistory.classList.remove('font-bold', 'border-b-2', 'border-blue-500');
+                tabHistory.classList.add('text-gray-600');
+                tabMemory.classList.add('font-bold', 'border-b-2', 'border-blue-500');
+                tabMemory.classList.remove('text-gray-600');
+                
+                // Cập nhật hiển thị bộ nhớ khi chuyển qua
+                updateMemoryDisplay();
+            }
+
+            tabHistory.addEventListener('click', showHistoryTab);
+            tabMemory.addEventListener('click', showMemoryTab);
+
+            // THÊM MỚI: Listener cho nút xóa bộ nhớ
+            clearMemoryButton.addEventListener('click', () => {
+                memoryClear(); // Hàm này đã gọi updateMemoryDisplay()
             });
 
 
-            // Khởi tạo màn hình khi tải trang
-            // --- THAY ĐỔI: Gọi cả hai hàm cập nhật ---
-            updateHistoryDisplay(); // Để hiển thị "No history"
-            // Khởi tạo màn hình khi tải trang
+            // --- 12. KHỞI CHẠY ---
+            updateHistoryDisplay();
+            updateMemoryDisplay(); // THÊM MỚI
             updateDisplay();
         });
     </script>
